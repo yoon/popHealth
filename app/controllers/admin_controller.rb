@@ -9,6 +9,7 @@ class AdminController < ApplicationController
     @patient_count = Record.all.count
     @query_cache_count = QueryCache.all.count
     @patient_cache_count = PatientCache.all.count
+    @provider_count = Provider.all.count
   end
   def remove_patients
     Record.all.delete
@@ -17,6 +18,10 @@ class AdminController < ApplicationController
   def remove_caches
     QueryCache.all.delete
     PatientCache.all.delete
+    redirect_to action: 'patients'
+  end
+  def remove_providers
+    Provider.all.delete
     redirect_to action: 'patients'
   end
   
