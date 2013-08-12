@@ -185,7 +185,7 @@ class MeasuresController < ApplicationController
 
   def qrda_cat3
     selected_measures = current_user.selected_measures
-    HealthDataStandards::Export::Cat3.new.export(selected_measures, @effective_date, @period_start, @effective_date)
+    HealthDataStandards::Export::Cat3.new.export(selected_measures, @effective_date.to_i, @period_start, @effective_date)
     # Atna.log(current_user.username, :query)
     # selected_measures = current_user.selected_measures
 
