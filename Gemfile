@@ -4,7 +4,7 @@ gem 'rails', '3.2.14'
 
 gem 'quality-measure-engine', '2.5.1'
 
-gem "health-data-standards", '3.2.8'
+gem "health-data-standards", :path => '../health-data-standards'
 gem 'nokogiri'
 gem 'rubyzip'
 

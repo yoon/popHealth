@@ -1,3 +1,18 @@
+PATH
+  remote: ../health-data-standards
+  specs:
+    health-data-standards (3.2.11)
+      activesupport (~> 3.2.14)
+      builder (~> 3.0.0)
+      erubis (~> 2.7.0)
+      log4r (~> 1.1.10)
+      memoist (~> 0.9.1)
+      mongoid (~> 3.1.4)
+      nokogiri (~> 1.6.0)
+      rest-client (~> 1.6.7)
+      rubyzip
+      uuid (~> 2.3.7)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -43,6 +58,11 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.6.3)
+    configatron (2.13.0)
+      yamler (>= 0.1.0)
+    cover_me (1.2.0)
+      configatron
+      hashie
     daemons (1.1.9)
     delayed_job (3.0.5)
       activesupport (~> 3.0)
@@ -66,17 +86,7 @@ GEM
       thor (>= 0.13.6)
     formtastic (2.2.1)
       actionpack (>= 3.0)
-    health-data-standards (3.2.8)
-      activesupport (~> 3.2.14)
-      builder (~> 3.0.0)
-      erubis (~> 2.7.0)
-      log4r (~> 1.1.10)
-      memoist (~> 0.9.1)
-      mongoid (~> 3.1.4)
-      nokogiri (~> 1.6.0)
-      rest-client (~> 1.6.7)
-      rubyzip
-      uuid (~> 2.3.7)
+    hashie (2.0.5)
     hike (1.2.3)
     i18n (0.6.5)
     journey (1.0.4)
@@ -167,10 +177,6 @@ GEM
       railties (~> 3.2.0)
       sass (>= 3.1.10)
       tilt (~> 1.3)
-    simplecov (0.7.1)
-      multi_json (~> 1.0)
-      simplecov-html (~> 0.7.1)
-    simplecov-html (0.7.1)
     slop (3.4.6)
     sprockets (2.2.2)
       hike (~> 1.2)
@@ -205,6 +211,7 @@ GEM
     warden (1.2.3)
       rack (>= 1.0)
     will_paginate (3.0.4)
+    yamler (0.1.0)
 
 PLATFORMS
   ruby
@@ -213,16 +220,17 @@ DEPENDENCIES
   bootstrap-sass
   cancan
   coffee-rails
+  cover_me
   devise
   factory_girl (= 2.6.3)
   foreman
   formtastic
-  health-data-standards (= 3.2.8)
+  health-data-standards!
   jquery-rails
   json
   kaminari
   libv8 (~> 3.11.8.3)
-  minitest (~> 4.0)
+  minitest
   mocha
   mongoid
   nokogiri
@@ -232,7 +240,6 @@ DEPENDENCIES
   rails-backbone
   rubyzip
   sass-rails
-  simplecov
   therubyracer (~> 0.11.0beta5)
   thin
   turn
