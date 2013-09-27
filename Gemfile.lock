@@ -1,3 +1,7 @@
+PATH
+  remote: ../health-data-standards
+  specs:
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -218,7 +222,7 @@ DEPENDENCIES
   factory_girl (= 2.6.3)
   foreman
   formtastic
-  health-data-standards (= 3.2.8)
+  health-data-standards!
   highline
   jquery-rails
   json
