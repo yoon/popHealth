@@ -6,46 +6,48 @@ class AdminController < ApplicationController
   add_breadcrumb 'admin', :admin_users_path
 
   def patients
-    @patient_count = Record.all.count
-    @query_cache_count = QueryCache.all.count
-    @patient_cache_count = PatientCache.all.count
-    @provider_count = Provider.all.count
+    @patient_count = Record.count
+    @query_cache_count = QueryCache.count
+    @patient_cache_count = PatientCache.count
+    @provider_count = Provider.count
   end
+
   def remove_patients
     Record.all.delete
     redirect_to action: 'patients'
   end
+
   def remove_caches
     QueryCache.all.delete
     PatientCache.all.delete
     redirect_to action: 'patients'
   end
+
   def remove_providers
-    Provider.all.delete
+    Provider.destroy_all
     redirect_to action: 'patients'
   end
-  
+
   def upload_patients
 
     file = params[:file]
-    i = 0
     temp_file = Tempfile.new("patient_upload")
 
     File.open(temp_file.path, "wb") { |f| f.write(file.read) }
-    
+
     Zip::ZipFile.open(temp_file.path) do |zipfile|
       zipfile.entries.each do |entry|
         next if entry.directory?
         xml = zipfile.read(entry.name)
         result = RecordImporter.import(xml)
-        
-        if (result[:status] == 'success') 
+
+        if (result[:status] == 'success')
           @record = result[:record]
           QME::QualityReport.update_patient_results(@record.medical_record_number)
           Atna.log(current_user.username, :phi_import)
           Log.create(:username => current_user.username, :event => 'patient record imported', :medical_record_number => @record.medical_record_number)
         end
-        
+
       end
     end
     redirect_to action: 'patients'
@@ -111,7 +113,7 @@ class AdminController < ApplicationController
       render :text => "User not found"
     end
   end
-  
+
   def validate_authorization!
     authorize! :admin, :users
   end
