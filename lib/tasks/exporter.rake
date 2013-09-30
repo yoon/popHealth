@@ -45,9 +45,9 @@ namespace :export do
                     use:"WP",
                     value:"(847)608-7316"
                   }],
-                  
+
                   time: Time.now,
-                  organization: {ids: [ {root: "2.16.840.1.113883.3.1502" , extension: ""}],
+                  organization: {ids: [ {root: "2.16.840.1.113883.3.1502" , extension: "mitre-org"}],
                                   name: "mitre-org"}}],
      custodian: {ids: [ {root: "1.2.3.4" , extension: "custodian_ext"}],
                  person: {given: "Jeff", family: "Lunt"},
