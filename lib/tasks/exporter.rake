@@ -8,20 +8,20 @@ namespace :export do
     puts "Rails env: #{Rails.env}"
     puts "Exporting measure #{measure.nqf_id}.#{measure.hqmf_id}..."
     output = File.open("#{measure.nqf_id}.#{measure.hqmf_id}.cat3.xml", "w")
-    output <<  exporter.export([measure], generate_header, Time.gm(2012, 12, 31), Date.parse("2012-01-01"), Date.parse("2012-12-31"))
+    output <<  exporter.export([measure], generate_header, Time.gm(2012, 12, 31,23,59,00) , Date.parse("2012-01-01"), Date.parse("2012-12-31"))
     output.close
   end
-  
+
   desc 'Generate QRDA3 file for all specified measure types, and outputs it to STDOUT.'
   task :cat3 do
     exporter = HealthDataStandards::Export::Cat3.new
-    
+
     measures = case ENV['MEASURE_TYPE']
       when "ep" then HealthDataStandards::CQM::Measure.all.select{|m| m.type == "ep"}
       when "eh" then HealthDataStandards::CQM::Measure.all.select{|m| m.type == "eh"}
       else           HealthDataStandards::CQM::Measure.all
     end
-  
+
     measures.each do |m|
       puts "Exporting measure #{m.nqf_id}.#{m.hqmf_id}..."
       output = File.open("#{m.nqf_id}.#{m.hqmf_id}.cat3.xml", "w")
@@ -62,7 +62,7 @@ namespace :export do
                                         name: ""}
                           }
       }
-    
+
     Qrda::Header.new(header_hash)
   end
 end
