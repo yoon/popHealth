@@ -175,39 +175,18 @@ class MeasuresController < ApplicationController
 
   def qrda_cat3
     selected_measures = current_user.selected_measures
-    HealthDataStandards::Export::Cat3.new.export(selected_measures, @effective_date.to_i, @period_start, @effective_date)
-    # Atna.log(current_user.username, :query)
-    # selected_measures = current_user.selected_measures
+    measure_ids = selected_measures.map{|measure| measure['id']}
+    full_measures = HealthDataStandards::CQM::Measure.where(:hqmf_id.in => measure_ids)
 
-    # measure_ids = selected_measures.map{|measure| measure['id']}
-    # expected_results = QueryCache.in(:measure_id => measure_ids).where(:effective_date => current_user.effective_date)
+    exporter = HealthDataStandards::Export::Cat3.new
+    output = exporter.export(full_measures, Time.at(current_user.effective_date).to_datetime, @period_start, Time.at(current_user.effective_date).to_datetime)
 
-    # results = {}
-    # expected_results.each do |value|
-    #   result = results[value["measure_id"]] ||= {"hqmf_id"=>value["measure_id"], "population_ids" => {}}
-    #   population_ids = value["population_ids"]
-    #   strat_id = population_ids["stratification"]
-    #   population_ids.each_pair do |pop_key,pop_id|
-    #     if pop_key != "stratification"
-    #       pop_result  = result["population_ids"][pop_id] ||= {"type"=> pop_key}
-    #       pop_val = value[pop_key]
-    #       if strat_id
-    #         pop_result["stratifications"] ||= {}
-    #         pop_result["stratifications"][strat_id] = pop_val
-    #       else
-    #         pop_result["value"] = pop_val
-    #       end
-    #     end
-    #   end
-    # end
-    # @results = results
-    # @measures = MONGO_DB['measures'].find({:hqmf_id => {"$in" => measure_ids}, :sub_id => {"$in" =>[nil,'a']}})
-    # respond_to do |format|
-    #   format.xml do
-    #     response.headers['Content-Disposition']='attachment;filename=qrda_cat3.xml';
-    #     render :content_type=>'application/xml'
-    #   end
-    # end
+    respond_to do |format|
+      format.xml do
+        response.headers['Content-Disposition']='attachment;filename=qrda_cat3.xml';
+        render inline: output
+      end
+    end
   end
 
   def measure_report

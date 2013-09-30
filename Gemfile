@@ -20,6 +20,8 @@ gem 'highline'
 
 gem 'devise'
 
+gem 'git'
+
 gem 'foreman'
 gem "thin"
 gem 'formtastic'
