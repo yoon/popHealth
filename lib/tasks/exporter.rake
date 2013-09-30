@@ -13,7 +13,7 @@ namespace :export do
       end
     end
     destination_dir = File.join(Rails.root, 'tmp', 'test_results')
-    Dir.mkdir(destination_dir) unless File.exists?(destination_dir)
+    FileUtils.mkdir_p destination_dir
     puts "Measures: #{measures.map(&:nqf_id).join(",")}"
     puts "Rails env: #{Rails.env}"
     puts "Exporting #{destination_dir}/#{Time.now.strftime '%y-%m-%d_%H%M'}.cat3.xml..."
