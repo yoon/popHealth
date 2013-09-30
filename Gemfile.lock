@@ -1,6 +1,17 @@
 PATH
   remote: ../health-data-standards
   specs:
+    health-data-standards (3.2.11)
+      activesupport (~> 3.2.14)
+      builder (~> 3.0.0)
+      erubis (~> 2.7.0)
+      log4r (~> 1.1.10)
+      memoist (~> 0.9.1)
+      mongoid (~> 3.1.4)
+      nokogiri (~> 1.6.0)
+      rest-client (~> 1.6.7)
+      rubyzip
+      uuid (~> 2.3.7)
 
 GEM
   remote: http://rubygems.org/
@@ -71,17 +82,6 @@ GEM
     formtastic (2.2.1)
       actionpack (>= 3.0)
     git (1.2.6)
-    health-data-standards (3.2.8)
-      activesupport (~> 3.2.14)
-      builder (~> 3.0.0)
-      erubis (~> 2.7.0)
-      log4r (~> 1.1.10)
-      memoist (~> 0.9.1)
-      mongoid (~> 3.1.4)
-      nokogiri (~> 1.6.0)
-      rest-client (~> 1.6.7)
-      rubyzip
-      uuid (~> 2.3.7)
     highline (1.6.19)
     hike (1.2.3)
     i18n (0.6.5)
@@ -223,6 +223,7 @@ DEPENDENCIES
   factory_girl (= 2.6.3)
   foreman
   formtastic
+  git
   health-data-standards!
   highline
   jquery-rails
