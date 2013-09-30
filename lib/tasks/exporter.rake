@@ -1,33 +1,24 @@
 namespace :export do
-  desc 'Generate QRDA3 XML file for the measure specified via its nqf_id (e.g. 0438)'
-  task :cat3_by_nqf_id, [:nqf_id] => :environment do |t, args|
-    puts args[:nqf_id]
-    exporter = HealthDataStandards::Export::Cat3.new
-    measure = HealthDataStandards::CQM::Measure.find_by({nqf_id: args[:nqf_id]})
-
-    puts "Rails env: #{Rails.env}"
-    puts "Exporting measure #{measure.nqf_id}.#{measure.hqmf_id}..."
-    output = File.open("#{measure.nqf_id}.#{measure.hqmf_id}.cat3.xml", "w")
-    output <<  exporter.export([measure], generate_header, Time.gm(2012, 12, 31,23,59,00) , Date.parse("2012-01-01"), Date.parse("2012-12-31"))
-    output.close
-  end
-
-  desc 'Generate QRDA3 file for all specified measure types, and outputs it to STDOUT.'
+  desc 'Generate QRDA3 file for specified measures (NQF_ID=0004,0038) or measure types (MEASURE_TYPE=[ep|eh])'
   task :cat3 do
     exporter = HealthDataStandards::Export::Cat3.new
-
-    measures = case ENV['MEASURE_TYPE']
-      when "ep" then HealthDataStandards::CQM::Measure.all.select{|m| m.type == "ep"}
-      when "eh" then HealthDataStandards::CQM::Measure.all.select{|m| m.type == "eh"}
-      else           HealthDataStandards::CQM::Measure.all
+    measures = []
+    if ENV['NQF_ID']
+      measures = HealthDataStandards::CQM::Measure.any_in({nqf_id: ENV['NQF_ID'].split(",")}).all
+    else
+      measures = case ENV['MEASURE_TYPE']
+        when "ep" then HealthDataStandards::CQM::Measure.all.select{|m| m.type == "ep"}
+        when "eh" then HealthDataStandards::CQM::Measure.all.select{|m| m.type == "eh"}
+        else           HealthDataStandards::CQM::Measure.all
+      end
     end
-
-    measures.each do |m|
-      puts "Exporting measure #{m.nqf_id}.#{m.hqmf_id}..."
-      output = File.open("#{m.nqf_id}.#{m.hqmf_id}.cat3.xml", "w")
-      output << exporter.export([m], generate_header, Time.gm(2012, 12, 31), Date.parse("2012-01-01"), Date.parse("2012-12-31"))
-      output.close
-    end
+    Dir.mkdir(destination_dir = File.join(Rails.root, 'tmp', 'test_results'))
+    puts "Measures: #{measures.map(&:nqf_id).join(",")}"
+    puts "Rails env: #{Rails.env}"
+    puts "Exporting #{destination_dir}/#{Time.now.strftime '%y-%m-%d_%H%M'}.cat3.xml..."
+    output = File.open(File.join(destination_dir, "#{Time.now.strftime '%Y-%m-%d_%H%M'}.cat3.xml"), "w")
+    output << exporter.export(measures, generate_header, Time.gm(2012, 12, 31,23,59,00), Date.parse("2012-01-01"), Date.parse("2012-12-31"))
+    output.close
   end
 
   def generate_header
