@@ -179,7 +179,7 @@ class MeasuresController < ApplicationController
     full_measures = HealthDataStandards::CQM::Measure.where(:hqmf_id.in => measure_ids)
 
     exporter = HealthDataStandards::Export::Cat3.new
-    output = exporter.export(full_measures, Time.at(current_user.effective_date).to_datetime, @period_start, Time.at(current_user.effective_date).to_datetime)
+    output = exporter.export(full_measures, generate_header(Time.now), Time.at(@effective_date).to_datetime, @period_start, Time.at(@effective_date).to_datetime)
 
     respond_to do |format|
       format.xml do
@@ -187,6 +187,9 @@ class MeasuresController < ApplicationController
         render inline: output
       end
     end
+  end
+  def generate_header(time)
+    Qrda::Header.new(YAML.load(File.read(File.join(Rails.root, 'config', 'qrda3_header.yml'))).deep_merge(legal_authenticator: {time: time}))
   end
 
   def measure_report
