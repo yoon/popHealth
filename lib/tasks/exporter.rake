@@ -81,13 +81,18 @@ namespace :export do
         menu.choice(:q, "quit") { say "quitter"; exit }
       end
     end
+    effective_date = Time.gm(2012, 12, 31,23,59,00)
+    measures.each do |measure|
+      qr = QME::QualityReport.new(measure['id'], measure['sub_id'], 'effective_date' => effective_date.to_i)
+      qr.calculate(false) unless qr.calculated?
+    end
     destination_dir = File.join(Rails.root, 'tmp', 'test_results')
     FileUtils.mkdir_p destination_dir
     puts "Measures: #{measures.map(&:nqf_id).join(",")}"
     puts "Rails env: #{Rails.env}"
     puts "Exporting #{destination_dir}/#{Time.now.strftime '%Y-%m-%d_%H%M'}.cat3.xml..."
     output = File.open(File.join(destination_dir, "#{Time.now.strftime '%Y-%m-%d_%H%M'}.cat3.xml"), "w")
-    output << exporter.export(measures, generate_header(Time.now), Time.gm(2012, 12, 31,23,59,00), Date.parse("2012-01-01"), Date.parse("2012-12-31"))
+    output << exporter.export(measures, generate_header(Time.now), effective_date, Date.parse("2012-01-01"), Date.parse("2012-12-31"))
     output.close
   end
 
