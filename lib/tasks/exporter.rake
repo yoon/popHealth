@@ -83,7 +83,13 @@ namespace :export do
     end
     effective_date = Time.gm(2012, 12, 31,23,59,00)
     measures.each do |measure|
-      qr = QME::QualityReport.new(measure['id'], measure['sub_id'], 'effective_date' => effective_date.to_i)
+      measure_model = QME::QualityMeasure.new(measure['id'], measure['sub_id'])
+      oid_dictionary = OidHelper.generate_oid_dictionary(measure_model.definition)
+      qr = QME::QualityReport.new(measure['id'],
+                                  measure['sub_id'],
+                                  'effective_date' => effective_date.to_i,
+                                  'test_id' => measure['test_id'],
+                                  'oid_dictionary' => oid_dictionary)
       qr.calculate(false) unless qr.calculated?
     end
     destination_dir = File.join(Rails.root, 'tmp', 'test_results')
