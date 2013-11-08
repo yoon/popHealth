@@ -1,44 +1,62 @@
 require 'hqmf-parser'
 
 namespace :export do
-  desc 'Generate QRDA1 file for specified measures (HQMF_ID=<UUID>) and patient first name (FIRST=Jessica)'
+  desc 'Generate QRDA CAT1 files for all patients, then copy them into sub-folders by HQMF_ID where each patient is part of the IPP for that measure.'
   task :cat1 do
     puts "Rails env: #{Rails.env}"
     exporter = HealthDataStandards::Export::Cat1.new
-    measures = []
-    measure_ids = ENV['HQMF_ID'].split(',')
-    patient = Record.find_by(first: ENV['FIRST'])
-    puts "#{patient.class}: #{patient.id} - #{patient.first} #{patient.last}"
+    mongo_session = Mongoid.session(:default)
 
-    if ENV['HQMF_ID']
-      puts "Measure count: #{measure_ids.count}"
-      measure_ids.each do |m_id|
-        Mongoid.session(:default)['measures'].find({ hqmf_id: ENV['HQMF_ID'] }).each do |measure|
-          measures << HQMF::Document.from_json(measure['hqmf_document'])
-        end
-      end
-    elsif ENV['MEASURE_TYPE']
-      measures = case ENV['MEASURE_TYPE']
-        when "ep" then Mongoid.session(:default)['measures'].all.select{|m| m.type == "ep"}
-        when "eh" then Mongoid.session(:default)['measures'].all.select{|m| m.type == "eh"}
-        else           Mongoid.session(:default)['measures'].all
-      end
-    else
-      choose do |menu|
-        menu.prompt = "Which measures? "
-        HealthDataStandards::CQM::Measure.all.group_by(&:nqf_id).sort.each do |nqf_id, ms|
-          menu.choice(nqf_id){ measures = ms }
-        end
-        menu.choice(:q, "quit") { say "quitter"; exit }
+    measures = []
+    hqmf_ids = HealthDataStandards::CQM::Measure.all.collect{|m| m.hqmf_id }.uniq
+    hqmf_ids.each_with_index do |hqmf_id, index|
+      print "\rParsing #{hqmf_ids.length} HQMF documents: (#{index+1}) #{hqmf_id}"
+
+      mongo_session['measures'].find({ hqmf_id: hqmf_id }).each do |measure|
+        measures << HQMF::Document.from_json(measure['hqmf_document'])
       end
     end
-    destination_dir = File.join(Rails.root, 'tmp', 'test_results')
-    FileUtils.mkdir_p destination_dir
-    puts "Exporting #{destination_dir}/#{Time.now.strftime '%Y-%m-%d_%H%M'}.cat1.xml..."
+    puts "\rParsing #{hqmf_ids.length} HQMF documents: DONE                                     "
 
-    output = File.open(File.join(destination_dir, "#{Time.now.strftime '%Y-%m-%d_%H%M'}.cat1.xml"), "w")
-    output << exporter.export(patient, measures, Time.gm(2012,1,1, 23,59,00), Time.gm(2012,12,31, 23,59,00),)
-    output.close
+    print "Loading #{mongo_session['patient_cache'].find.count} patient cache objects..."
+    patient_cache_values = mongo_session['patient_cache'].find.collect{|pc| pc['value'] }
+    puts "\rLoading #{mongo_session['patient_cache'].find.count} patient cache objects...DONE"
+
+    print "Generating #{Record.all.count} CAT1 files:"
+    all_patient_records = Record.all
+    base_cat1_dir = File.join(Rails.root, 'tmp', 'cat1-exports')
+    FileUtils.rm_rf(File.join(base_cat1_dir))
+    all_patient_records.each_with_index do |patient, index|
+      FileUtils.mkdir_p(base_cat1_dir)
+      export_filename = "#{base_cat1_dir}/#{patient.last.downcase}-#{patient.first.downcase}.cat1.xml"
+
+      print "\rGenerating #{Record.all.count} CAT1 files: (#{index+1}) #{export_filename}                                        "
+      output = File.open(export_filename, "w")
+      output << exporter.export(patient, measures, Time.gm(2012,1,1, 23,59,00), Time.gm(2012,12,31, 23,59,00),)
+      output.close
+      
+    end
+    puts "\rGenerating #{Record.all.count} CAT1 files: (DONE)                                                                    "
+
+    print "Copying files"
+    measures.each do |measure|
+      per_measure_dir = File.join(Rails.root, 'tmp', 'cat1-exports', measure.hqmf_id)
+      FileUtils.mkdir_p(per_measure_dir)
+      all_patient_records.each do |patient|
+        pcvs_where_patient_is_in_ipp = patient_cache_values.select do |pcv|
+          pcv['IPP'] == 1 &&
+          pcv['medical_record_id'] == patient.medical_record_number &&
+          measure.hqmf_id == pcv['measure_id']
+        end
+
+        pcvs_where_patient_is_in_ipp.each do |pcv|
+          print "."
+          FileUtils.cp(File.join(base_cat1_dir, "#{patient.last.downcase}-#{patient.first.downcase}.cat1.xml"), per_measure_dir)
+        end
+      end
+    end
+
+    puts ""
   end
 
 
