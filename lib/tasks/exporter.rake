@@ -65,12 +65,12 @@ namespace :export do
     exporter = HealthDataStandards::Export::Cat3.new
     measures = []
     if ENV['NQF_ID']
-      measures = HealthDataStandards::CQM::Measure.any_in({nqf_id: ENV['NQF_ID'].split(",")}).all
+      measures = HealthDataStandards::CQM::Measure.any_in({nqf_id: ENV['NQF_ID'].split(",")}).sort(nqf_id: 1, sub_id: 1)
     elsif ENV['MEASURE_TYPE']
       measures = case ENV['MEASURE_TYPE']
-        when "ep" then HealthDataStandards::CQM::Measure.all.select{|m| m.type == "ep"}
-        when "eh" then HealthDataStandards::CQM::Measure.all.select{|m| m.type == "eh"}
-        else           HealthDataStandards::CQM::Measure.all
+        when "ep" then HealthDataStandards::CQM::Measure.all.where(type: "ep").sort(nqf_id: 1, sub_id: 1)
+        when "eh" then HealthDataStandards::CQM::Measure.all.where(type: "eh").sort(nqf_id: 1, sub_id: 1)
+        else           HealthDataStandards::CQM::Measure.sort(nqf_id: 1, sub_id: 1)
       end
     else
       choose do |menu|
@@ -94,7 +94,7 @@ namespace :export do
     end
     destination_dir = File.join(Rails.root, 'tmp', 'test_results')
     FileUtils.mkdir_p destination_dir
-    puts "Measures: #{measures.map(&:nqf_id).join(",")}"
+    puts "Measures: " + measures.map{|m| "#{m.nqf_id}#{m.sub_id}"}.join(",")
     puts "Rails env: #{Rails.env}"
     puts "Exporting #{destination_dir}/#{Time.now.strftime '%Y-%m-%d_%H%M'}.cat3.xml..."
     output = File.open(File.join(destination_dir, "#{Time.now.strftime '%Y-%m-%d_%H%M'}.cat3.xml"), "w")
