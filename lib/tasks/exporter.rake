@@ -7,56 +7,58 @@ namespace :export do
     exporter = HealthDataStandards::Export::Cat1.new
     mongo_session = Mongoid.session(:default)
 
+    # Collect list of HQMF IDs
     measures = []
     hqmf_ids = HealthDataStandards::CQM::Measure.all.collect{|m| m.hqmf_id }.uniq
+    puts "Parsing HQMF documents"
+
     hqmf_ids.each_with_index do |hqmf_id, index|
-      print "\rParsing #{hqmf_ids.length} HQMF documents: (#{index+1}) #{hqmf_id}"
+      puts "#{index+1} of #{hqmf_ids.length}: #{hqmf_id}"
 
       mongo_session['measures'].find({ hqmf_id: hqmf_id }).each do |measure|
         measures << HQMF::Document.from_json(measure['hqmf_document'])
       end
     end
-    puts "\rParsing #{hqmf_ids.length} HQMF documents: DONE                                     "
 
-    print "Loading #{mongo_session['patient_cache'].find.count} patient cache objects..."
+    # Load PatientCacheValue objects that contain the data that matches a patient
+    # to an IPP on a measure
+    puts "\nLoading #{mongo_session['patient_cache'].find.count} patient cache objects..."
     patient_cache_values = mongo_session['patient_cache'].find.collect{|pc| pc['value'] }
-    puts "\rLoading #{mongo_session['patient_cache'].find.count} patient cache objects...DONE"
 
-    print "Generating #{Record.all.count} CAT1 files:"
-    all_patient_records = Record.all
+    # Clear out previous export files
     base_cat1_dir = File.join(Rails.root, 'tmp', 'cat1-exports')
     FileUtils.rm_rf(File.join(base_cat1_dir))
-    all_patient_records.each_with_index do |patient, index|
-      FileUtils.mkdir_p(base_cat1_dir)
-      export_filename = "#{base_cat1_dir}/#{patient.last.downcase}-#{patient.first.downcase}.cat1.xml"
 
-      print "\rGenerating #{Record.all.count} CAT1 files: (#{index+1}) #{export_filename}                                        "
-      output = File.open(export_filename, "w")
-      output << exporter.export(patient, measures, Time.gm(2012,1,1, 23,59,00), Time.gm(2012,12,31, 23,59,00),)
-      output.close
-      
-    end
-    puts "\rGenerating #{Record.all.count} CAT1 files: (DONE)                                                                    "
+    # Spit out the resulting CAT1 files, per patient, per measure, per IPP
+    puts "\nExporting CAT1"
+    all_patient_records = Record.all
+    all_patient_records.each do |patient|
+      puts "Patient: #{patient.last}, #{patient.first}"
+      measures.each do |measure|
+        per_measure_dir = File.join(base_cat1_dir, measure.hqmf_id)
 
-    print "Copying files"
-    measures.each do |measure|
-      per_measure_dir = File.join(Rails.root, 'tmp', 'cat1-exports', measure.hqmf_id)
-      FileUtils.mkdir_p(per_measure_dir)
-      all_patient_records.each do |patient|
         pcvs_where_patient_is_in_ipp = patient_cache_values.select do |pcv|
           pcv['IPP'] == 1 &&
           pcv['medical_record_id'] == patient.medical_record_number &&
           measure.hqmf_id == pcv['measure_id']
         end
+        pcvs_where_patient_is_in_ipp.uniq!
 
-        pcvs_where_patient_is_in_ipp.each do |pcv|
-          print "."
-          FileUtils.cp(File.join(base_cat1_dir, "#{patient.last.downcase}-#{patient.first.downcase}.cat1.xml"), per_measure_dir)
+        if pcvs_where_patient_is_in_ipp.size > 0
+          per_measure_dir = File.join(Rails.root, 'tmp', 'cat1-exports', measure.hqmf_id)
+          FileUtils.mkdir_p(per_measure_dir)
+        end
+
+        pcvs_where_patient_is_in_ipp.each_with_index do |pcv, index|
+          export_filename = "#{per_measure_dir}/#{index.to_s.rjust(3, '0')}-#{patient.last.downcase}-#{patient.first.downcase}.cat1.xml"
+          puts "  Generating #{export_filename.split('/').last(2).split('/').last(2).join('/')}"
+
+          output = File.open(export_filename, "w")
+          output << exporter.export(patient, [measure], Time.gm(2012,1,1, 23,59,00), Time.gm(2012,12,31, 23,59,00),)
+          output.close
         end
       end
     end
-
-    puts ""
   end
 
 
