@@ -30,12 +30,12 @@ namespace :export do
     FileUtils.rm_rf(File.join(base_cat1_dir))
 
     # Spit out the resulting CAT1 files, per patient, per measure, per IPP
-    puts "\nExporting CAT1"
+    puts "\nExporting CAT1 by HQMF set_id"
     all_patient_records = Record.all
     all_patient_records.each do |patient|
       puts "Patient: #{patient.last}, #{patient.first}"
       measures.each do |measure|
-        per_measure_dir = File.join(base_cat1_dir, measure.hqmf_id)
+        per_measure_dir = File.join(base_cat1_dir, measure.hqmf_set_id)
 
         pcvs_where_patient_is_in_ipp = patient_cache_values.select do |pcv|
           pcv['IPP'] == 1 &&
@@ -45,7 +45,6 @@ namespace :export do
         pcvs_where_patient_is_in_ipp.uniq!
 
         if pcvs_where_patient_is_in_ipp.size > 0
-          per_measure_dir = File.join(Rails.root, 'tmp', 'cat1-exports', measure.hqmf_id)
           FileUtils.mkdir_p(per_measure_dir)
         end
 
