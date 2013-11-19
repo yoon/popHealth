@@ -35,7 +35,8 @@ namespace :export do
     all_patient_records.each do |patient|
       puts "Patient: #{patient.last}, #{patient.first}"
       measures.each do |measure|
-        per_measure_dir = File.join(base_cat1_dir, measure.hqmf_set_id)
+        nqf_id = measure.attributes.select{|attr| attr.id == "NQF_ID_NUMBER" }.first.value
+        per_measure_dir = File.join(base_cat1_dir, "#{nqf_id}-#{measure.hqmf_set_id}")
 
         pcvs_where_patient_is_in_ipp = patient_cache_values.select do |pcv|
           pcv['IPP'] == 1 &&
@@ -49,7 +50,7 @@ namespace :export do
         end
 
         pcvs_where_patient_is_in_ipp.each_with_index do |pcv, index|
-          export_filename = "#{per_measure_dir}/#{index.to_s.rjust(3, '0')}-#{patient.last.downcase}-#{patient.first.downcase}.cat1.xml"
+          export_filename = "#{per_measure_dir}/#{index.to_s.rjust(3, '0')}-#{nqf_id}-#{patient.last.downcase}-#{patient.first.downcase}.cat1.xml"
           puts "  Generating #{export_filename.split('/').last(2).split('/').last(2).join('/')}"
 
           output = File.open(export_filename, "w")
