@@ -10,14 +10,28 @@ namespace :export do
     # Collect list of HQMF IDs
     measures = []
     hqmf_ids = HealthDataStandards::CQM::Measure.all.collect{|m| m.hqmf_id }.uniq
+
     puts "Parsing HQMF documents"
-
     hqmf_ids.each_with_index do |hqmf_id, index|
-      puts "#{index+1} of #{hqmf_ids.length}: #{hqmf_id}"
-
       mongo_session['measures'].find({ hqmf_id: hqmf_id }).each do |measure|
+        puts "#{index+1} of #{hqmf_ids.length}: HQMF / SET / NQF :: #{measure['hqmf_id']} / #{measure['hqmf_set_id']} / #{measure['nqf_id']}"
         measures << HQMF::Document.from_json(measure['hqmf_document'])
       end
+    end
+
+    puts "Building patient caches..."
+    effective_date = Time.gm(2012, 12, 31,23,59,00)
+    cqm_measures = HealthDataStandards::CQM::Measure.all
+    cqm_measures.each_with_index do |measure, index|
+      puts "#{index+1} of #{cqm_measures.size}: #{measure.title}"
+      measure_model = QME::QualityMeasure.new(measure['id'], measure['sub_id'])
+      oid_dictionary = OidHelper.generate_oid_dictionary(measure_model.definition)
+      qr = QME::QualityReport.new(measure['id'],
+                                  measure['sub_id'],
+                                  'effective_date' => effective_date.to_i,
+                                  'test_id' => measure['test_id'],
+                                  'oid_dictionary' => oid_dictionary)
+      qr.calculate(false) unless qr.calculated?
     end
 
     # Load PatientCacheValue objects that contain the data that matches a patient
@@ -32,8 +46,8 @@ namespace :export do
     # Spit out the resulting CAT1 files, per patient, per measure, per IPP
     puts "\nExporting CAT1 by HQMF set_id"
     all_patient_records = Record.all
-    all_patient_records.each do |patient|
-      puts "Patient: #{patient.last}, #{patient.first}"
+    all_patient_records.each_with_index do |patient, index|
+      puts "Patient: #{index+1} of #{all_patient_records.size} #{patient.last}, #{patient.first}"
       measures.each do |measure|
         nqf_id = measure.attributes.select{|attr| attr.id == "NQF_ID_NUMBER" }.first.value
         per_measure_dir = File.join(base_cat1_dir, "#{nqf_id}-#{measure.hqmf_set_id}")
@@ -50,7 +64,7 @@ namespace :export do
         end
 
         pcvs_where_patient_is_in_ipp.each_with_index do |pcv, index|
-          export_filename = "#{per_measure_dir}/#{index.to_s.rjust(3, '0')}-#{nqf_id}-#{patient.last.downcase}-#{patient.first.downcase}.cat1.xml"
+          export_filename = "#{per_measure_dir}/#{index.to_s.rjust(3, '0')}-#{pcv['nqf_id']}-#{patient.last.downcase}-#{patient.first.downcase}.cat1.xml"
           puts "  Generating #{export_filename.split('/').last(2).split('/').last(2).join('/')}"
 
           output = File.open(export_filename, "w")
