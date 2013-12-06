@@ -55,8 +55,12 @@ class @QualityReport
 		selector.find(".numeratorValue").html(data.NUMER)
 		selector.find(".denominatorValue").html(data.DENOM)
 	percent: (selector, data) -> 
-		percent = if (data.DENOM == 0 || data.DENOM == undefined) then 0 else  (data.NUMER / data.DENOM) * 100
-		selector.html("#{Math.floor(percent)}%")	
+		if (data.population_ids.MSRPOPL )
+			percent = data.OBSERV
+			selector.html("#{percent}")	
+		else
+			percent = if (data.DENOM == 0 || data.DENOM == undefined) then 0 else  (data.NUMER / data.DENOM) * 100
+			selector.html("#{Math.floor(percent)}%")	
 }
 
 @makeMeasureListClickable = ->
