@@ -7,29 +7,34 @@ namespace :export do
     exporter = HealthDataStandards::Export::Cat1.new
     mongo_session = Mongoid.session(:default)
 
-    # Collect list of HQMF IDs
-    measures = []
-    hqmf_ids = HealthDataStandards::CQM::Measure.all.collect{|m| m.hqmf_id }.uniq
+    unless ENV['NQF_ID']
+      puts "You must specify an NQF_ID"
+      next
+    end
+
+    puts "NQF_ID #{ENV['NQF_ID']}"
+    cqm_measures = HealthDataStandards::CQM::Measure.all.select{|m| m.nqf_id == ENV['NQF_ID']}
+
+    hqmf_docs = []
 
     puts "Parsing HQMF documents"
-    hqmf_ids.each_with_index do |hqmf_id, index|
-      mongo_session['measures'].find({ hqmf_id: hqmf_id }).each do |measure|
-        puts "#{index+1} of #{hqmf_ids.length}: HQMF / SET / NQF :: #{measure['hqmf_id']} / #{measure['hqmf_set_id']} / #{measure['nqf_id']}"
-        measures << HQMF::Document.from_json(measure['hqmf_document'])
+    cqm_measures.each_with_index do |cqm_measure, index|
+      mongo_session['measures'].find({ hqmf_id: cqm_measure.hqmf_id }).each do |mongo_measure|
+        puts "#{index+1} of #{cqm_measures.length}: HQMF / SET / NQF :: #{mongo_measure['hqmf_id']} / #{mongo_measure['hqmf_set_id']} / #{mongo_measure['nqf_id']}"
+        hqmf_docs << HQMF::Document.from_json(cqm_measure['hqmf_document'])
       end
     end
 
     puts "Building patient caches..."
     effective_date = Time.gm(2012, 12, 31,23,59,00)
-    cqm_measures = HealthDataStandards::CQM::Measure.all
-    cqm_measures.each_with_index do |measure, index|
-      puts "#{index+1} of #{cqm_measures.size}: #{measure.title}"
-      measure_model = QME::QualityMeasure.new(measure['id'], measure['sub_id'])
+    cqm_measures.each_with_index do |cqm_measure, index|
+      puts "#{index+1} of #{cqm_measures.size}: #{cqm_measure.title}"
+      measure_model = QME::QualityMeasure.new(cqm_measure['id'], cqm_measure['sub_id'])
       oid_dictionary = OidHelper.generate_oid_dictionary(measure_model.definition)
-      qr = QME::QualityReport.new(measure['id'],
-                                  measure['sub_id'],
+      qr = QME::QualityReport.new(cqm_measure['id'],
+                                  cqm_measure['sub_id'],
                                   'effective_date' => effective_date.to_i,
-                                  'test_id' => measure['test_id'],
+                                  'test_id' => cqm_measure['test_id'],
                                   'oid_dictionary' => oid_dictionary)
       qr.calculate(false) unless qr.calculated?
     end
@@ -48,14 +53,14 @@ namespace :export do
     all_patient_records = Record.all
     all_patient_records.each_with_index do |patient, index|
       puts "Patient: #{index+1} of #{all_patient_records.size} #{patient.last}, #{patient.first}"
-      measures.each do |measure|
-        nqf_id = measure.attributes.select{|attr| attr.id == "NQF_ID_NUMBER" }.first.value
-        per_measure_dir = File.join(base_cat1_dir, "#{nqf_id}-#{measure.hqmf_set_id}")
+      hqmf_docs.each do |hqmf_doc|
+        nqf_id = hqmf_doc.attributes.select{|attr| attr.id == "NQF_ID_NUMBER" }.first.value
+        per_measure_dir = File.join(base_cat1_dir, "#{nqf_id}-#{hqmf_doc.hqmf_set_id}")
 
         pcvs_where_patient_is_in_ipp = patient_cache_values.select do |pcv|
           pcv['IPP'] == 1 &&
           pcv['medical_record_id'] == patient.medical_record_number &&
-          measure.hqmf_id == pcv['measure_id']
+          hqmf_doc.hqmf_id == pcv['measure_id']
         end
         pcvs_where_patient_is_in_ipp.uniq!
 
@@ -68,7 +73,7 @@ namespace :export do
           puts "  Generating #{export_filename.split('/').last(2).split('/').last(2).join('/')}"
 
           output = File.open(export_filename, "w")
-          output << exporter.export(patient, [measure], Time.gm(2012,1,1, 23,59,00), Time.gm(2012,12,31, 23,59,00),)
+          output << exporter.export(patient, [hqmf_doc], Time.gm(2012,1,1, 23,59,00), Time.gm(2012,12,31, 23,59,00),)
           output.close
         end
       end
