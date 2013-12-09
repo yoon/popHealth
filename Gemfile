@@ -3,8 +3,10 @@ source 'http://rubygems.org'
 gem 'rails', '3.2.14'
 
 gem 'quality-measure-engine', '2.5.1'
+#gem 'quality-measure-engine', :git=> "https://github.com/pophealth/quality-measure-engine.git", :branch=> "mongoid_refactor"
 
-gem "health-data-standards", :git => 'git://github.com/yoon/health-data-standards.git', :branch => 'nmedw'
+
+gem "health-data-standards", :git => 'git://github.com/yoon/health-data-standards', :branch => 'nmedw'
 gem 'nokogiri'
 gem 'rubyzip'
 
