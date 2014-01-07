@@ -1,0 +1,392 @@
+@import "bootstrap3";
+@import "font-awesome/less/font-awesome";
+
+@icon-font-path: "../fonts/";
+@fa-font-path: "../fonts";
+
+// Custom Variables
+@title-line-height: 1.5;
+@title-bar-height: 3em;
+@listing-line-height: 1.5;
+@circle-bkg-color: #fff;
+@title-circle-radius: 21px;
+
+// Custom styles that are part of the theme
+
+.dl-horizontal {
+  dt{
+    text-transform: uppercase;
+    text-align: left;
+  }
+}
+
+
+.fraction-listing {
+  text-align: center;
+  font-size: 1.3em;
+  font-weight: 500;
+  .numerator, .denominator {
+    width: 40px;
+  }
+  .denominator {
+    border-top: 1px solid black;
+  }
+}
+
+
+// Custom classes for semantic mark-up
+// font-size -> 1em = 14px
+
+// Dashboard
+
+.nav {
+  font-weight: 500;
+
+  .location {
+    margin-top: 4px
+  }
+  .profile {
+    margin-top: 14px;
+  }
+}
+.export-btn {
+  width: 110px;
+  text-align: center;
+  margin-top: 24px;
+  text-transform: uppercase;
+}
+
+.category {
+  background-color: @gray-lighter;
+  margin-top: 1em;
+  .category-title {
+    line-height: 2em;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+  .category-percent {
+    .title-circle {
+      border-radius: @title-circle-radius;
+      height: @title-circle-radius * 2;
+      width: @title-circle-radius * 2;
+      background-color: @circle-bkg-color;
+      margin: auto;
+      padding-top: 5px;
+      text-align: center;
+      font-size: 1.7em;
+    }
+  }
+  .category-fraction {
+    font-weight: 800;
+    font-size: 1em;
+    line-height: 1.4em;
+  }
+}
+
+.measure {
+  margin-top: 1em;
+  .measure-title {
+    padding-top: 10px;
+    font-size: 18px;     // Has to be in pixels otherwise popover inherits font-size
+    font-weight: 500;
+  }
+  .measure-subtitle {
+    padding-top: 15px;
+    font-weight: 500;
+  }
+  .percent-listing {
+    text-align: center;
+  }
+}
+.pop-chart {
+  height: 50px;
+  width: 125px;
+  rect{
+    stroke:white;
+    stroke-width:0px;
+    fill: rgb(205,205,205);
+  }
+  .numer {
+    fill: rgb(59,133,140);
+  }
+  .denom {
+    fill: rgb(59,133,140);
+  }
+}
+
+
+// New styles for side bar for the measure view/patient list
+// TODO Clean up these styles once pages are integrated and complete.
+
+.population-btn {
+  .col-xs-12;
+  .btn;
+  font-weight: 700;
+  font-size: 1.1em;
+  line-height: 2.5em;
+  border: 1px solid white;
+  padding: 0px 7px;
+  background-color: @gray-lighter;
+  .query-result {
+    .pull-right;
+    font-size: 1.3em;
+  }
+  .title {
+    .pull-left;
+  }
+  &.active {
+    background-color: @brand-primary;
+    color: white;
+  }
+}
+
+@table-border-color: white;
+.table {
+  thead {
+    background-color: @gray-lighter;
+    > tr > th {
+      border: none;
+      font-weight: 700;
+      &.pid {
+        text-transform: uppercase;
+        font-size: 1.2em;
+      }
+    }
+  }
+  > thead > tr > th, > tbody > tr > td {
+    line-height: 2;
+    font-size: 1em;
+    vertical-align: middle;
+    .btn-default {
+      padding: 7px 10px;
+    }
+  }
+}
+
+
+
+
+
+#measureSummary {
+  // FIXME this should build on the media query for large monitors
+  .dl-horizontal dt {
+    width: 175px;
+  }
+
+  .measure-border-level-n(@n) {
+    background-color: lighten(@brand-primary, percentage(0.5 - @n / 10));
+  }
+
+  .measure-border {
+    background-color: @brand-primary;
+    padding: 2px;
+    border-radius: 10px;
+    .icon-border {
+      border: 2px solid #4b979d;
+      border-radius: @title-circle-radius;
+      color: @brand-primary;
+      display: inline-block;
+      line-height: @title-circle-radius * 2;
+      text-align: center;
+      height: @title-circle-radius * 2;
+      width: @title-circle-radius * 2;
+    }
+    .measure-border-level-n(1);
+    .measure-border {
+      .measure-border-level-n(2);
+      .measure-border {
+        .measure-border-level-n(3);
+        .measure-border {
+          .measure-border-level-n(4);
+          .measure-border {
+            .measure-border-level-n(5);
+          }
+        }
+      }
+    }
+    .measure-item {
+      background-color: @body-bg;
+      border-radius: 10px;
+      margin: 2px 2px 2px 20px;
+      .measure-content {
+        padding: 2px;
+      }
+    }
+  }
+
+  .conjunction, .temporal-operator {
+    background-color: @gray-lighter;
+    border-radius: 10px;
+    padding: 5px 10px;
+    margin: 10px;
+    font-weight: bold;
+    display: inline-block;
+    &.negation {
+      color: white;
+      background-color: @brand-danger;
+    }
+  }
+}
+
+// patient view
+.patient {
+  .row;
+  .sidebar {
+    .measure-btn {
+      width: 260px;
+      background-color: @gray-lighter;
+      margin-bottom: 5px;
+      padding: 10px 15px;
+      border-bottom: 1px solid transparent;
+      white-space: normal;
+      text-align: left;
+      > * {
+        display: inline;
+      }
+      &.active {
+        background-color: @brand-primary;
+        color: #fff;
+      }
+    }
+    .indicator {
+      width: 14px;
+      padding-right: 5px;
+    }
+  }
+
+  .main-head {
+    font-size: 36px;
+    .fa-user {
+      .make-md-column(1);
+      text-align: left;
+      padding-left: 3px;
+    }
+  }
+
+  #time-bar {
+    position: absolute;
+    left: 28px;
+    top: 54px;
+    width: 8px;
+    height: 100%;
+    background-color: @gray-lighter;
+  }
+
+  .demographics {
+    .clearfix;
+    .make-sm-column-offset(1);
+
+    .dl-horizontal {
+      padding-left: 0;
+      .make-md-column(6);
+      > dd {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .time-line {
+    background-color: @gray-lighter;
+    margin-left: 15px;
+
+    .timeline-title {
+      .make-md-column-offset(1);
+      font-size: 24px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+  }
+
+  .record-listing {
+    .make-md-column(12);
+    padding: 15px 0;
+    margin-top: 20px;
+
+    .active {
+      background-color: @brand-primary;
+      color: #fff;
+      border: 2px dashed #fff;
+    }
+
+    .circle-icon {
+      .pull-left;
+      .make-md-column(1);
+      margin-top: 8px;
+      padding-left: 0;
+
+      .fa {
+        text-align: center;
+        padding-top: 7px;
+        width: 36px;
+        height: 36px;
+        background-color: white;
+        border-radius: 18px;
+        border: 2px solid @brand-primary;
+        color: @brand-primary;
+        font-size: 18px;
+        margin: auto;
+      }
+
+      .active-icon {
+        .fa {
+          background-color: @brand-primary;
+          border-radius: 18px;
+          color: white;
+        }
+      }
+    }
+
+    .patient-data {
+      .make-md-column(11);
+      background-color: white;
+      border: 1px solid @gray-darker;
+
+      &:before {
+         content:"";
+         position: absolute;
+         right: 100%;
+         top: 11px;
+         width: 0;
+         height: 0;
+         border-top: 14px solid transparent;
+         border-right: 20px solid black;
+         border-bottom: 14px solid transparent;
+      }
+
+      &:after {
+         content:"";
+         position: absolute;
+         right: 100%;
+         top: 12px;
+         width: 0;
+         height: 0;
+         border-top: 13px solid transparent;
+         border-right: 19px solid white;
+         border-bottom: 13px solid transparent;
+      }
+
+      dl {
+        margin-bottom: 15px;
+        line-height: 24px;
+      }
+
+      .dl-record {
+        .make-md-column(8);
+      }
+
+      .dl-date {
+        .make-md-column(4);
+        padding-right: 0;
+        dt {
+          width: 60px;
+        }
+        dd {
+          margin-left: 0px;
+        }
+      }
+    }
+  }
+}
+@import "login.less";

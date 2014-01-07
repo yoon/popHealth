@@ -1,18 +1,20 @@
 source 'http://rubygems.org'
 
 gem 'rails', '3.2.14'
-
-gem 'quality-measure-engine', '2.5.1'
+gem 'quality-measure-engine', '3.0.0.beta.1'
 
 gem "health-data-standards", :git => 'git://github.com/yoon/health-data-standards.git', :branch => 'nmedw'
 gem 'nokogiri'
 gem 'rubyzip'
 
-gem "will_paginate" # we need to get rid of this, very inefficient with large data sets and mongoid
-gem "kaminari"
+# Should be removed in the future. This is only used for the
+# admin log page. When the admin pages are switched to
+# client side pagination, this can go away.
+gem 'will_paginate'
+
+gem "active_model_serializers"
 
 gem 'json', :platforms => :jruby
-# these are all tied to 1.3.1 because bson 1.4.1 was yanked.  To get bundler to be happy we need to force 1.3.1 to cause the downgrade
 
 gem "mongoid"
 
@@ -27,41 +29,42 @@ gem "thin"
 gem 'formtastic'
 gem 'cancan'
 gem 'factory_girl', "2.6.3"
-gem "rails-backbone"
+
 # Windows doesn't have syslog, so need a gem to log to EventLog instead
 gem 'win32-eventlog', :platforms => [:mswin, :mingw]
+
+# backport fixes from future versions of Sprockets into a Rails 3-compatible gem
+gem 'sprockets', '2.2.2.backport1'
 
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
+  gem 'less-rails'
   gem 'sass-rails'
   gem 'coffee-rails'
   gem 'uglifier'
   gem "bootstrap-sass"
 end
 
-group :test, :develop do
+group :test, :develop, :ci do
   gem 'pry'
-  gem "unicorn", :platforms => [:ruby, :jruby]
+  gem 'jasmine', '2.0.0'
   gem 'turn', :require => false
   gem 'simplecov', :require => false
-  gem "minitest", "~> 4.0"
   gem 'mocha', :require => false
+  gem "unicorn", :platforms => [:ruby, :jruby]
+  gem 'minitest', "~> 4.0"
+end
+
+group :test, :develop do
+  gem 'pry-debugger'
 end
 
 group :production do
-  gem 'libv8', '~> 3.11.8.3'
-  gem 'therubyracer', '~> 0.11.0beta5', :platforms => [:ruby, :jruby] # 10.8 mountain lion compatibility
+  gem 'libv8', '~> 3.16.14.3'
+  gem 'therubyracer', '~> 0.12.0', :platforms => [:ruby, :jruby] # 10.8 mountain lion compatibility
 end
 
+gem 'handlebars_assets'
+# FIXME remove this when we don't need old versions of jquery/backbone/underscore anymore
 gem 'jquery-rails'
-
-# Use unicorn as the web server
-# gem 'unicorn'
-
-# Deploy with Capistrano
-# gem 'capistrano'
-
-# To use debugger
-# gem 'ruby-debug19', :require => 'ruby-debug'
-

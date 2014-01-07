@@ -16,34 +16,13 @@ PopHealth::Application.routes.draw do
 
   get "logs/index"
   
-  match 'measures', :to => 'measures#index', :as => :dashboard, :via => :get
-  match "measure/:id(/:sub_id)/providers", :to => "measures#providers", :via => :get
-  match 'measure/:id(/:sub_id)', :to => 'measures#show', :as => :measure, :via => :get
-  match 'measures/result/:id(/:sub_id)', :to => 'measures#result', :as => :measure_result, :via => :get
-  match 'measures/definition/:id(/:sub_id)', :to => 'measures#definition', :as => :measure_definition, :via => :get
-  match 'measures/patients/:id(/:sub_id)', :to => 'measures#patients', :as => :patients, :via => :get
-  match 'measure/:id/select', :to => 'measures#select', :as => :select, :via => :post
-  match 'measure/:id/remove', :to => 'measures#remove', :as => :remove, :via => :delete
-  match 'measures/measure_patients/:id(/:sub_id)', :to=>'measures#measure_patients', :as => :measure_patients, :via=> :get
-  match 'measures/measure_report', :to=>'measures#measure_report', :as => :measure_report, :via=> :get
-  match 'measures/patient_list/:id(/:sub_id)', :to=>'measures#patient_list', :as => :patient_list, :via=> :get
-  match 'measures/period', :to=>'measures#period', :as => :period, :via=> :post
-  match 'measures/qrda_cat3', :to=>'measures#qrda_cat3'
-  
   match 'provider/:npi', :to => "measures#index", :as => :provider_dashboard, :via => :get
   
   match 'records', :to => 'records#create', :via => :post
   
-  match 'patients', :to => 'patients#index', :via => :get
-  match 'patients/show/:id', :to => 'patients#show'
-  match 'patients/toggle_excluded/:id/:measure_id(/:sub_id)', :to => 'patients#toggle_excluded', :via => :post
 
-  root :to => 'measures#index'
-  
-  resources :measures do
-    member { get :providers }
-  end
-  
+  root :to => 'home#index'
+    
   resources :providers do
     resources :patients do
       collection do
@@ -59,7 +38,32 @@ PopHealth::Application.routes.draw do
   end
   
   resources :teams
-  
+
+  namespace :api do
+    match 'reports/qrda_cat3.xml', :to =>'reports#cat3', :format => :xml
+    resources :providers do
+      resources :patients do
+        collection do
+          get :manage
+          put :update_all
+        end
+      end
+    end
+    resources :patients do
+      member do
+        get :results
+      end
+    end
+
+    resources :measures
+    resources :queries do
+       member do
+        get :patients
+        get :patient_results
+        put :recalculate
+       end
+    end
+  end
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

@@ -8,42 +8,17 @@
 
   <title>popHealth : An Open Source Quality Measure Reference Implementation</title>
   <link rel="shortcut icon" href="/favicon.ico"/>
-  <%# stylesheet_link_tag :all %>
 
-  <% unless request.xhr?%>
-  <%= stylesheet_link_tag "application" %>
-  <%= javascript_include_tag "application" %>
-  <%end%>
+  <%= stylesheet_link_tag "application", :media => "all" %>
 
   <%= csrf_meta_tag %>
   <%= yield :head %>
-  <% if APP_CONFIG['idle_timeout_enabled'] %>
-  <script type="text/javascript" charset="utf-8">
-    $(function() {
-      $.idleTimeout('body', 'body', {
-        idleAfter: <%=APP_CONFIG['idle_timeout']%>,
-        warningLength: 20,
-        failedRequests: 0,
-        onTimeout: function(){
-          $.ajax({
-            url: '<%= destroy_user_session_path %>',
-            type: 'DELETE',
-            success: function(result) {
-              window.location.href = '<%=Rails.configuration.relative_url_root%>/logout.html';
-            }
-          });
-        }
-      });
-    });
-
-  </script>
-  <% end %>
 
   <% if @definition %>
+  <!-- TODO remove global variables; deal with state locally in a model/view -->
   <script type="text/javascript" charset="utf-8">
     currentMeasure = "<%= @definition['id'] %>";
     subMeasure = "<%= @definition['sub_id'] %>";
-
   </script>
   <% end %>
 
@@ -52,16 +27,10 @@
   </script>
 </head>
 <body>
+  <%= render :partial => 'shared/header' %>
 
-<div id="container" class="container-fluid">
-  <% unless request.xhr?%>
-    <%= render :partial => 'shared/header' %>
-  <% end %>
-  <div class="row-fluid">
-    <%= yield %>
-  </div>
-
-  </div>
-</div><!-- end #container -->
+  <div id="container" class="container"></div>
+  <%= javascript_include_tag "application" %>
+  <%= yield %>
 </body>
 </html>
