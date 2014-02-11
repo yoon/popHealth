@@ -85,14 +85,17 @@ namespace :export do
   task :cat3 do
     exporter = HealthDataStandards::Export::Cat3.new
     measures = []
-    if ENV['NQF_ID']
+    filename = %{#{Time.now.strftime '%Y-%m-%d_%H%M'}.cat3.xml}
+    if ENV['SUB_ID'] && ENV['NQF_ID']
+      measures = HealthDataStandards::CQM::Measure.where({nqf_id: ENV['NQF_ID'], sub_id: ENV['SUB_ID']})
+    elsif ENV['NQF_ID']
       measures = HealthDataStandards::CQM::Measure.any_in({nqf_id: ENV['NQF_ID'].split(",")}).sort(nqf_id: 1, sub_id: 1)
-    elsif ENV['MEASURE_TYPE']
-      measures = case ENV['MEASURE_TYPE']
-        when "ep" then HealthDataStandards::CQM::Measure.all.where(type: "ep").sort(nqf_id: 1, sub_id: 1)
-        when "eh" then HealthDataStandards::CQM::Measure.all.where(type: "eh").sort(nqf_id: 1, sub_id: 1)
-        else           HealthDataStandards::CQM::Measure.sort(nqf_id: 1, sub_id: 1)
-      end
+    elsif ENV['MEASURE_TYPE'] == "ep"
+      measures = HealthDataStandards::CQM::Measure.all.where(type: "ep").sort(nqf_id: 1, sub_id: 1)
+      filename.prepend "ep_"
+    elsif ENV['MEASURE_TYPE'] == "eh"
+      measures = HealthDataStandards::CQM::Measure.all.where(type: "eh").sort(nqf_id: 1, sub_id: 1)
+      filename.prepend "eh_"
     else
       choose do |menu|
         menu.prompt = "Which measures? "
@@ -111,8 +114,8 @@ namespace :export do
     FileUtils.mkdir_p destination_dir
     puts "Measures: " + measures.map{|m| "#{m.nqf_id}#{m.sub_id}"}.join(",")
     puts "Rails env: #{Rails.env}"
-    puts "Exporting #{destination_dir}/#{Time.now.strftime '%Y-%m-%d_%H%M'}.cat3.xml..."
-    output = File.open(File.join(destination_dir, "#{Time.now.strftime '%Y-%m-%d_%H%M'}.cat3.xml"), "w")
+    puts "Exporting #{destination_dir}/#{filename}..."
+    output = File.open(File.join(destination_dir, filename), "w")
     output << exporter.export(measures, generate_header(Time.now), effective_date, Date.parse("2012-01-01"), Date.parse("2012-12-31"))
     output.close
   end
