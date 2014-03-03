@@ -1,9 +1,9 @@
 source 'http://rubygems.org'
 
 gem 'rails', '3.2.14'
-gem 'quality-measure-engine', '3.0.0.beta.1'
+gem 'quality-measure-engine', '3.0.0.beta.2'
 
-gem "health-data-standards", :git => 'git://github.com/yoon/health-data-standards.git', :branch => 'nmedw'
+gem 'health-data-standards', '3.4.2'
 gem 'nokogiri'
 gem 'rubyzip'
 
@@ -29,6 +29,7 @@ gem "thin"
 gem 'formtastic'
 gem 'cancan'
 gem 'factory_girl', "2.6.3"
+gem 'apipie-rails'
 
 # Windows doesn't have syslog, so need a gem to log to EventLog instead
 gem 'win32-eventlog', :platforms => [:mswin, :mingw]
