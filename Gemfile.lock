@@ -15,8 +15,9 @@ GIT
       rubyzip (~> 0.9.9)
 
 GIT
-  remote: https://github.com/projectcypress/health-data-standards.git
-  revision: c0bf708569ce3de847e47250792db935c1cb4e98
+  remote: https://github.com/yoon/health-data-standards.git
+  revision: 60d743c8e773441c5d92a36f5573e34981cf9be9
+  branch: hl
   specs:
     health-data-standards (3.4.6)
       activesupport (~> 4.1.1)
