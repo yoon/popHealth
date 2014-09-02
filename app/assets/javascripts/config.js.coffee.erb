@@ -3,6 +3,7 @@
     isEnabled: <%= APP_CONFIG['idle_timeout_enabled'] %>
     timer: <%= APP_CONFIG['idle_timeout'] %>
   # FIXME don't hard-code effective date
-  effectiveDate: 1356998340
+  # 2012-12-31: 1356998340, 2013-09-30: 1380585540, 2014-09-30: 1412121540
+  effectiveDate: 1412121540
   fieldValues: <%= HQMF::DataCriteria::FIELDS.to_json.html_safe %>
   ehExclusionType: <%= APP_CONFIG['eh_exclusion_type'].to_json %>
