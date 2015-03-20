@@ -34,7 +34,7 @@ gem 'factory_girl', "2.6.3"
 gem 'win32-eventlog', :platforms => [:mswin, :mingw]
 
 # backport fixes from future versions of Sprockets into a Rails 3-compatible gem
-gem 'sprockets', '2.2.2.backport1'
+gem 'sprockets', '2.2.2.backport2', :git => 'git://github.com/ideasasylum/sprockets-2.2.2.backport.git'
 
 # Gems used only for assets and not required
 # in production environments by default.
@@ -57,7 +57,7 @@ group :test, :develop, :ci do
 end
 
 group :test, :develop do
-  gem 'pry-debugger'
+  gem 'pry-byebug'
 end
 
 group :production do
